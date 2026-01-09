@@ -3,11 +3,11 @@
     "target": "ES2020",
     "module": "esnext",
     "moduleResolution": "bundler",
-    "jsx": "react-jsx",
+    "noEmit": true,
     "jsxImportSource": "hono/jsx",
     "strict": true,
     "skipLibCheck": true,
-    "outDir": "dist"
+    "jsx": "react-jsx",
   },
   "include": ["src"]
 }

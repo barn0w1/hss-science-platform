@@ -13,7 +13,7 @@ export const env = {
   DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET!,
   DISCORD_REDIRECT_URI: process.env.DISCORD_REDIRECT_URI || 'http://auth.localhost/callback',
   DRIVE_URL: process.env.DRIVE_URL || 'http://drive.localhost',
-  PORT: Number(process.env.PORT) || 3000,
+  PORT: Number(process.env.AUTH_PORT || process.env.PORT) || 3000,
 };
 
 for (const key of requiredEnv) {

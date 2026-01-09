@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, boolean, bigint, uuid, integer, index } from "drizzle-orm/pg-core";
-import { users } from "./core.js";
+import { users } from "./core";
 
 /**
  * Storage System

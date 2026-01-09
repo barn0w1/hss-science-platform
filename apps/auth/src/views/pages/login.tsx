@@ -1,4 +1,4 @@
-import { RootLayout } from '../layouts/root.js'
+import { RootLayout } from '../layouts/root'
 
 export const LoginPage = (props: { error?: string, redirectTo?: string }) => {
   const { error, redirectTo } = props
