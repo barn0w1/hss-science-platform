@@ -1,7 +1,11 @@
-import { RootLayout } from '../layouts/root'
+import { RootLayout } from '../layouts/root.js'
 
-export const LoginPage = (props: { error?: string }) => {
-  const { error } = props
+export const LoginPage = (props: { error?: string, redirectTo?: string }) => {
+  const { error, redirectTo } = props
+  
+  const discordLoginUrl = redirectTo 
+    ? `/auth/discord?redirect_to=${encodeURIComponent(redirectTo)}` 
+    : '/auth/discord'
 
   return (
     <RootLayout>
@@ -22,7 +26,7 @@ export const LoginPage = (props: { error?: string }) => {
             )}
 
             <a
-              href="/auth/discord"
+              href={discordLoginUrl}
               class="flex items-center justify-center w-full bg-slate-900 text-white px-6 py-3.5 rounded-full font-medium hover:bg-slate-800 transition-all hover:shadow-lg"
             >
               Continue with Discord

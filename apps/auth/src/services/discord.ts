@@ -1,4 +1,23 @@
-import { env } from '../config/env'
+import { env } from '../config/env.js'
+
+export type DiscordUser = {
+  id: string
+  username: string
+  discriminator: string
+  global_name: string | null
+  avatar: string | null
+  bot?: boolean
+  system?: boolean
+  mfa_enabled?: boolean
+  banner?: string | null
+  accent_color?: number | null
+  locale?: string
+  verified?: boolean
+  email?: string | null
+  flags?: number
+  premium_type?: number
+  public_flags?: number
+}
 
 export async function exchangeCodeForToken(code: string) {
   const tokenRes = await fetch('https://discord.com/api/oauth2/token', {

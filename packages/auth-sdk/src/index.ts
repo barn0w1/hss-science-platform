@@ -1,4 +1,4 @@
-import Redis from "ioredis";
+import { Redis } from "ioredis";
 
 // env
 const REDIS_HOST = process.env.REDIS_HOST || "localhost";
@@ -14,6 +14,14 @@ export const redis = new Redis({
 export const COOKIE_NAME = "hss_science_session";
 // 7 days in seconds
 export const SESSION_TTL = 60 * 60 * 24 * 7; 
+
+export const COOKIE_OPTS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+    path: '/',
+    maxAge: SESSION_TTL,
+} as const;
 
 export interface SessionUser {
   id: string;

@@ -1,6 +1,6 @@
 import { serve } from '@hono/node-server'
-import { env } from './config/env'
-import app from './app'
+import { env } from './config/env.js'
+import app from './app.js'
 
 console.log(`Auth Server running on port ${env.PORT}`)
 
