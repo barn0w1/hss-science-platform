@@ -1,0 +1,27 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Environment variables (絶対ダメ！)
+.env
+.env.*
+!.env.example
+
+# Build outputs
+dist
+.next
+build
+.turbo
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Certs (証明書の実体はアップしない)
+*.pem
+*.key

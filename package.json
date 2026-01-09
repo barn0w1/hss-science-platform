@@ -1,0 +1,16 @@
+{
+  "name": "hss-science-platform",
+  "version": "1.0.0",
+  "description": "The unified cloud infrastructure for HSS Science.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "barn0w1",
+  "license": "GNU Affero General Public License v3.0",
+  "packageManager": "pnpm@10.27.0",
+  "devDependencies": {
+    "turbo": "^2.7.3"
+  }
+}
