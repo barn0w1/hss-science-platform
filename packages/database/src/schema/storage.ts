@@ -2,7 +2,7 @@ import { pgTable, text, timestamp, boolean, bigint, uuid, integer, index } from 
 import { users } from "./core";
 
 /**
- * Storage 
+ * Storage System
  */
 
 // Spaces
@@ -12,12 +12,19 @@ export const spaces = pgTable("spaces", {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
 
-  name: text("name").notNull(),
-  ownerId: text("owner_id")
-    .references(() => users.id)
+  // Display name of the drive
+  name: text("name")
     .notNull(),
-  
-  quotaBytes: bigint("quota_bytes", { mode: "number" }).default(10 * 1024 * 1024 * 1024),
+
+  // Storage limit (bytes)
+  quotaBytes: bigint("quota_bytes", { mode: "number" })
+    .default(10 * 1024 * 1024 * 1024)
+    .notNull(),
+
+  // Owner
+  ownerId: text("owner_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
 
   createdAt: timestamp("created_at")
     .defaultNow()
@@ -28,88 +35,83 @@ export const spaces = pgTable("spaces", {
 // Blobs
 export const blobs = pgTable("blobs", {
   // SHA256 Hash
-  hash: text("hash")
-    .primaryKey(),
+  hash: text("hash").primaryKey(),
 
-  // Size in bytes
-  size: bigint("size", { mode: "number" })
-    .notNull(),
-  
-  // MIME type
-  mimeType: text("mime_type")
+  // File size in bytes
+  size: bigint("size", { mode: "number" }).notNull(),
+
+  // MIME type for preview
+  mimeType: text("mime_type").notNull(),
+
+  // Garbage Collection: Deleted from R2 when refCount hits 0
+  refCount: integer("ref_count").default(0).notNull(),
+
+  // "pending": Uploading / "ready": Verified & stored in R2
+  status: text("status", { enum: ["pending", "ready"] })
+    .default("pending")
     .notNull(),
 
-  // Reference count
-  refCount: integer("ref_count")
-    .default(0)
-    .notNull(),
-
-  // Status (whether the upload is complete)
-  // pending: uploading or failed / ready: complete and available
-  status: text("status", { enum: ["pending", "ready"] }).default("pending").notNull(),
-
-  createdAt: timestamp("created_at")
-    .defaultNow()
-    .notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 
-// Nodes
+// 3. Nodes
+// Logical file system structure (Trees)
 export const nodes = pgTable("nodes", {
   // uuid
   id: uuid("id").defaultRandom().primaryKey(),
-  
-  // Which drive it belongs to
-  spaceId: text("space_id").references(() => spaces.id).notNull(),
-  
-  // 親フォルダ (Rootの場合はnull)
-  parentId: uuid("parent_id").references((): any => nodes.id),
-  
+
+  // Hierarchy
+  spaceId: text("space_id").references(() => spaces.id, { onDelete: "cascade" }).notNull(),
+  parentId: uuid("parent_id").references((): any => nodes.id, { onDelete: "cascade" }),
+
+  // Metadata
   name: text("name").notNull(),
-  
-  // file か folder か
   type: text("type", { enum: ["file", "folder"] }).notNull(),
 
-  // ファイルの場合のみ、Blobへのリンクを持つ
-  // フォルダの場合はnull
+  // Content Link (Files only, null for folders)
   blobHash: text("blob_hash").references(() => blobs.hash),
 
-  // ゴミ箱フラグ
-  isTrashed: boolean("is_trashed").default(false).notNull(),
-  
-  // 作成者と更新日時
+  // Permissions & State
   ownerId: text("owner_id").references(() => users.id).notNull(),
+  isTrashed: boolean("is_trashed").default(false).notNull(),
+
+  // Timestamps
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
-}, (table) => ({
-  // 検索を高速化するためのインデックス
-  parentIdx: index("parent_idx").on(table.parentId),
-  spaceIdx: index("space_idx").on(table.spaceId),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+}, (t) => ({
+  // Indexes for fast directory listing
+  parentIdx: index("node_parent_idx").on(t.parentId),
+  spaceIdx: index("node_space_idx").on(t.spaceId),
 }));
 
 
-// 4. Upload Sessions (マルチパートアップロード管理)
-// クライアントがR2に直接アップロードしている間の情報を保持する
+// 4. Upload Sessions
+// Tracks direct-to-R2 multipart uploads
 export const uploadSessions = pgTable("upload_sessions", {
-  // セッションID (Presigned URL発行時に生成)
+  // Session ID (for client/server coordination)
   id: text("id").primaryKey(),
-  
-  // S3のMultipart Upload ID (中断再開や完了処理に必要)
+
+  // S3 Multipart Upload ID (Critical for S3 interaction)
   uploadId: text("upload_id").notNull(),
-  
-  // 予定しているハッシュ値 (クライアントが計算)
+
+  // Validation
   targetHash: text("target_hash").notNull(),
-  
-  // 誰がアップロードしているか
-  userId: text("user_id").references(() => users.id).notNull(),
-  
-  // どのSpaceの、どのフォルダに置く予定か
+
+  // Destination Context
   spaceId: text("space_id").references(() => spaces.id).notNull(),
-  parentId: uuid("parent_id"), // nullならルート
-  name: text("name").notNull(), // ファイル名
+  parentId: uuid("parent_id"), // null if root
+  userId: text("user_id").references(() => users.id).notNull(),
+
+  // Metadata buffer
+  name: text("name").notNull(),
   size: bigint("size", { mode: "number" }).notNull(),
   mimeType: text("mime_type"),
 
-  // 有効期限 (これを超えたらゴミとして掃除する)
+  // Cleanup: Session expires after 24h
   expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });

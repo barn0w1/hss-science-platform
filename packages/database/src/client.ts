@@ -1,0 +1,13 @@
+import postgres from "postgres";
+
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL is missing in environment variables.");
+}
+
+// Create a connection pool
+// max: 10 is sufficient for standard usage within a container
+export const queryClient = postgres(connectionString, { max: 10 });
+
+// For migration scripts, we might need a single connection (handled separately)
