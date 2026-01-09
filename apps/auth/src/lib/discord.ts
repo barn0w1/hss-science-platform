@@ -1,0 +1,40 @@
+import { env } from '../config/env'
+
+export async function exchangeCodeForToken(code: string) {
+  const tokenRes = await fetch('https://discord.com/api/oauth2/token', {
+    method: 'POST',
+    body: new URLSearchParams({
+      client_id: env.DISCORD_CLIENT_ID,
+      client_secret: env.DISCORD_CLIENT_SECRET,
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: env.DISCORD_REDIRECT_URI,
+    }),
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  })
+
+  if (!tokenRes.ok) {
+    throw new Error('Failed to fetch token')
+  }
+
+  return tokenRes.json()
+}
+
+export async function getDiscordUser(accessToken: string) {
+  const userRes = await fetch('https://discord.com/api/users/@me', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+
+  if (!userRes.ok) {
+    throw new Error('Failed to fetch user')
+  }
+
+  return userRes.json()
+}
+
+export function getAuthUrl() {
+  const scope = encodeURIComponent('identify email')
+  return `https://discord.com/api/oauth2/authorize?client_id=${env.DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(
+    env.DISCORD_REDIRECT_URI
+  )}&response_type=code&scope=${scope}`
+}
