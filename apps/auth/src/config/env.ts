@@ -1,6 +1,8 @@
 import { config } from 'dotenv';
+import path from 'node:path';
 
-config();
+// Load .env from workspace root
+config({ path: path.resolve(process.cwd(), '../../.env') });
 
 const requiredEnv = [
   'DISCORD_CLIENT_ID',

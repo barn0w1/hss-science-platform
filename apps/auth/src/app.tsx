@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { logger } from 'hono/logger'
-import appHandler from './handlers/auth'
+import appHandler from './handlers/auth.js'
 
 const app = new Hono()
 

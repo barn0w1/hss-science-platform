@@ -1,4 +1,4 @@
-import { ALLOWED_REDIRECT_HOSTS } from '../config/allowed-origins'
+import { ALLOWED_REDIRECT_HOSTS } from '../config/allowed-origins.js'
 
 /**
  * リダイレクトURLが許可されたドメインかどうかを検証する

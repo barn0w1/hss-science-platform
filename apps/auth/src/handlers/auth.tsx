@@ -2,9 +2,9 @@ import { Hono } from 'hono'
 import { setCookie, getCookie, deleteCookie } from 'hono/cookie'
 import { db, users } from '@hss/database'
 import { AuthService, COOKIE_NAME, COOKIE_OPTS } from '@hss/auth-sdk'
-import { LoginPage } from '../../views/pages/login'
-import { exchangeCodeForToken, getAuthUrl, getDiscordUser, DiscordUser } from '../../services/discord'
-import { validateRedirectUrl, getDefaultRedirectUrl } from '../../utils/url'
+import { LoginPage } from '../views/pages/login.js'
+import { exchangeCodeForToken, getAuthUrl, getDiscordUser, DiscordUser } from '../services/discord.js'
+import { validateRedirectUrl, getDefaultRedirectUrl } from '../utils/url.js'
 
 const app = new Hono()
 
