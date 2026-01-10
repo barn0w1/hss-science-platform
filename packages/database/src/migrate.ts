@@ -1,10 +1,15 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
+import { config } from 'dotenv';
+import path from 'node:path';
 
-const connectionString = process.env.DATABASE_URL;
+// Load .env explicitly for migration script
+config({ path: path.resolve(process.cwd(), '../../.env') });
+
+const connectionString = process.env.HSS_DATABASE_URL;
 if (!connectionString) {
-  throw new Error("DATABASE_URL is missing");
+  throw new Error("HSS_DATABASE_URL is missing");
 }
 
 const runMigrate = async () => {

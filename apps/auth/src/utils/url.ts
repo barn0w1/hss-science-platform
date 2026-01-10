@@ -35,6 +35,6 @@ export function validateRedirectUrl(url: string | undefined | null): string | nu
  * デフォルトのリダイレクトURLを取得 (環境変数または安全なデフォルト)
  */
 export function getDefaultRedirectUrl(): string {
-  // 環境変数から取得するか、ハードコードされたデフォルトを返す
-  return process.env.DRIVE_URL || 'http://drive.localhost'
+  // デフォルトはlocalhost (ポータル的な役割)
+  return 'http://localhost:8000';
 }

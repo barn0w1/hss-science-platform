@@ -11,9 +11,3 @@ export const env = {
   // Ideally PORT should also come from config if fixed, or passed via env in deployment
   // For now keeping it consistent with local PORTS constant if we want
 };
-
-for (const key of requiredEnv) {
-  if (!process.env[key]) {
-    throw new Error(`Missing required environment variable: ${key}`);
-  }
-}
