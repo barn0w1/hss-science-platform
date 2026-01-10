@@ -1,14 +1,18 @@
 {
-  "$schema": "https://turborepo.com/schema.json",
+  "$schema": "https://turbo.build/schema.json",
   //"ui": "tui",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "build/**"]
+      "outputs": ["dist/**", ".next/**", "build/**"]
     },
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "type-check": {
+      "dependsOn": ["^build"],
+      "cache": true
     },
     "db:generate": {
       "cache": false

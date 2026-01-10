@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    /* Base Options */
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Strictness */
+    "strict": true,
+
+    /* Output Options (重要) */
+    "outDir": "dist",        // package.jsonの main/types と合わせる
+    "declaration": true,     // 型定義ファイル(.d.ts)を出力する
+    "sourceMap": true,       // デバッグ用
+
+    /* Path Aliases (任意) */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "drizzle.config.ts"]
+}
