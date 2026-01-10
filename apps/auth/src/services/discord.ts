@@ -51,9 +51,14 @@ export async function getDiscordUser(accessToken: string) {
   return userRes.json()
 }
 
-export function getAuthUrl() {
+export function getAuthUrl(state?: string) {
   const scope = encodeURIComponent('identify email')
-  return `https://discord.com/api/oauth2/authorize?client_id=${env.DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(
+  let url = `https://discord.com/api/oauth2/authorize?client_id=${env.DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(
     env.DISCORD_REDIRECT_URI
   )}&response_type=code&scope=${scope}`
+  
+  if (state) {
+      url += `&state=${encodeURIComponent(state)}`
+  }
+  return url
 }

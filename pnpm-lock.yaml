@@ -17,6 +17,9 @@ importers:
       '@hono/node-server':
         specifier: ^1.19.8
         version: 1.19.8(hono@4.11.3)
+      '@hss/auth-middleware':
+        specifier: workspace:*
+        version: link:../../packages/auth-middleware
       '@hss/database':
         specifier: workspace:*
         version: link:../../packages/database
