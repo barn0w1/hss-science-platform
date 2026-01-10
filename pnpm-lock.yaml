@@ -20,6 +20,9 @@ importers:
       '@hss/auth-middleware':
         specifier: workspace:*
         version: link:../../packages/auth-middleware
+      '@hss/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@hss/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -77,6 +80,9 @@ importers:
 
   packages/database:
     dependencies:
+      '@hss/config':
+        specifier: workspace:*
+        version: link:../config
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
@@ -105,6 +111,9 @@ importers:
 
   packages/session-sdk:
     dependencies:
+      '@hss/config':
+        specifier: workspace:*
+        version: link:../config
       ioredis:
         specifier: ^5.9.1
         version: 5.9.1

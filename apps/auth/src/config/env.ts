@@ -1,20 +1,15 @@
-import { config } from 'dotenv';
-import path from 'node:path';
+import { env as configEnv, checkRequiredEnv } from '@hss/config';
 
-// Load .env from workspace root
-config({ path: path.resolve(process.cwd(), '../../.env') });
-
-const requiredEnv = [
-  'HSS_DISCORD_CLIENT_ID',
-  'HSS_DISCORD_CLIENT_SECRET',
-  'HSS_DISCORD_REDIRECT_URI',
-] as const;
+// Ensure critical vars are present
+checkRequiredEnv();
 
 export const env = {
-  DISCORD_CLIENT_ID: process.env.HSS_DISCORD_CLIENT_ID!,
-  DISCORD_CLIENT_SECRET: process.env.HSS_DISCORD_CLIENT_SECRET!,
-  DISCORD_REDIRECT_URI: process.env.HSS_DISCORD_REDIRECT_URI || 'http://auth.localhost/callback',
-  PORT: Number(process.env.PORT_AUTH || process.env.PORT) || 3000,
+  DISCORD_CLIENT_ID: configEnv.HSS_DISCORD_CLIENT_ID!,
+  DISCORD_CLIENT_SECRET: configEnv.HSS_DISCORD_CLIENT_SECRET!,
+  DISCORD_REDIRECT_URI: configEnv.HSS_DISCORD_REDIRECT_URI || 'http://auth.localhost/callback',
+  PORT: 3000, 
+  // Ideally PORT should also come from config if fixed, or passed via env in deployment
+  // For now keeping it consistent with local PORTS constant if we want
 };
 
 for (const key of requiredEnv) {

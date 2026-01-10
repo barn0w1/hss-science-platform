@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { serve } from '@hono/node-server'
 import { logger } from 'hono/logger'
+import { PORTS } from '@hss/config'
 import { env } from './config/env.js'
 
 // Routes (Declarative)
@@ -17,9 +18,9 @@ app.get('/', (c) => c.text('HSS Auth Service is Running.'))
 // Mount routes (Sub-apps)
 app.route('/auth', authRoutes)
 
-console.log(`Auth Service running on port ${env.PORT}`)
+console.log(`Auth Service running on port ${PORTS.AUTH}`)
 
 serve({
   fetch: app.fetch,
-  port: env.PORT
+  port: PORTS.AUTH
 })

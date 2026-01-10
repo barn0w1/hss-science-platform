@@ -1,9 +1,10 @@
 import { Redis } from "ioredis";
+import { env } from "@hss/config";
 
 // env
-const REDIS_HOST = process.env.HSS_REDIS_HOST || "localhost";
-const REDIS_PORT = Number(process.env.HSS_REDIS_PORT) || 6379;
-const REDIS_PASSWORD = process.env.HSS_REDIS_PASSWORD || "password";
+const REDIS_HOST = env.HSS_REDIS_HOST;
+const REDIS_PORT = env.HSS_REDIS_PORT;
+const REDIS_PASSWORD = env.HSS_REDIS_PASSWORD;
 
 export const redis = new Redis({
   host: REDIS_HOST,
@@ -14,8 +15,8 @@ export const redis = new Redis({
 export const COOKIE_NAME = "hss_science_session";
 export const SESSION_TTL = 60 * 60 * 24 * 7; // 7 days in seconds
 
-const IS_PROD = process.env.NODE_ENV === 'production';
-const COOKIE_DOMAIN = process.env.HSS_COOKIE_DOMAIN;
+const IS_PROD = env.isProduction;
+const COOKIE_DOMAIN = env.HSS_COOKIE_DOMAIN;
 
 export const COOKIE_OPTS = {
     httpOnly: true,

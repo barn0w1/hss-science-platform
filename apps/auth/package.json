@@ -12,6 +12,7 @@
   "dependencies": {
     "@hono/node-server": "^1.19.8",
     "@hss/auth-middleware": "workspace:*",
+    "@hss/config": "workspace:*",
     "@hss/database": "workspace:*",
     "@hss/session-sdk": "workspace:*",
     "dotenv": "^17.2.3",
