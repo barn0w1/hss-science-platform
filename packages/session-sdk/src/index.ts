@@ -1,9 +1,9 @@
 import { Redis } from "ioredis";
 
 // env
-const REDIS_HOST = process.env.REDIS_HOST || "localhost";
-const REDIS_PORT = Number(process.env.REDIS_PORT) || 6379;
-const REDIS_PASSWORD = process.env.REDIS_PASSWORD || "password";
+const REDIS_HOST = process.env.HSS_REDIS_HOST || "localhost";
+const REDIS_PORT = Number(process.env.HSS_REDIS_PORT) || 6379;
+const REDIS_PASSWORD = process.env.HSS_REDIS_PASSWORD || "password";
 
 export const redis = new Redis({
   host: REDIS_HOST,
@@ -12,20 +12,14 @@ export const redis = new Redis({
 });
 
 export const COOKIE_NAME = "hss_science_session";
-// 7 days in seconds
-export const SESSION_TTL = 60 * 60 * 24 * 7; 
+export const SESSION_TTL = 60 * 60 * 24 * 7; // 7 days in seconds
 
 const IS_PROD = process.env.NODE_ENV === 'production';
-// 環境変数 COOKIE_DOMAIN があればそれを使用 (例: .hss-science.org)
-// なければ、Production時はセキュリティのためエラーにすべきだが、
-// ここではデフォルトでundefined (host-only) とする
-const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
+const COOKIE_DOMAIN = process.env.HSS_COOKIE_DOMAIN;
 
 export const COOKIE_OPTS = {
     httpOnly: true,
-    // Productionなら必ずSecure
     secure: IS_PROD,
-    // サブドメイン間で共有する場合は Lax が適切
     sameSite: 'Lax',
     path: '/',
     maxAge: SESSION_TTL,
