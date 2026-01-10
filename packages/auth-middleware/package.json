@@ -1,5 +1,5 @@
 {
-  "name": "@hss/session-sdk",
+  "name": "@hss/auth-middleware",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -16,10 +16,11 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "ioredis": "^5.9.1"
+    "@hss/session-sdk": "workspace:*",
+    "hono": "^4.11.3"
   },
   "devDependencies": {
-    "@types/node": "^20.19.27",
+    "@types/node": "^25.0.5",
     "typescript": "^5.9.3"
   }
 }

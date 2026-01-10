@@ -8,6 +8,7 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "packageManager": "pnpm@10.28.0",
   "scripts": {
     "dev": "tsc -w",
     "build": "tsc",

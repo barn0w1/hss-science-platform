@@ -43,6 +43,22 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/auth-middleware:
+    dependencies:
+      '@hss/session-sdk':
+        specifier: workspace:*
+        version: link:../session-sdk
+      hono:
+        specifier: ^4.11.3
+        version: 4.11.3
+    devDependencies:
+      '@types/node':
+        specifier: ^25.0.5
+        version: 25.0.5
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/database:
     dependencies:
       dotenv:
@@ -555,6 +571,9 @@ packages:
 
   '@types/node@25.0.3':
     resolution: {integrity: sha512-W609buLVRVmeW693xKfzHeIV6nJGGz98uCPfeXI1ELMLXVeKYZ9m15fAMSaUPBHYLGFsVRcMmSCksQOrZV9BYA==}
+
+  '@types/node@25.0.5':
+    resolution: {integrity: sha512-FuLxeLuSVOqHPxSN1fkcD8DLU21gAP7nCKqGRJ/FglbCUBs0NYN6TpHcdmyLeh8C0KwGIaZQJSv+OYG+KZz+Gw==}
 
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
@@ -1082,6 +1101,10 @@ snapshots:
       undici-types: 6.21.0
 
   '@types/node@25.0.3':
+    dependencies:
+      undici-types: 7.16.0
+
+  '@types/node@25.0.5':
     dependencies:
       undici-types: 7.16.0
 
