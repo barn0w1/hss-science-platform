@@ -1,4 +1,4 @@
-import { env } from '../config/env.js'
+import { env } from '@hss/config'
 
 export type DiscordUser = {
   id: string
@@ -23,11 +23,11 @@ export async function exchangeCodeForToken(code: string) {
   const tokenRes = await fetch('https://discord.com/api/oauth2/token', {
     method: 'POST',
     body: new URLSearchParams({
-      client_id: env.DISCORD_CLIENT_ID,
-      client_secret: env.DISCORD_CLIENT_SECRET,
+      client_id: env.HSS_DISCORD_CLIENT_ID!,
+      client_secret: env.HSS_DISCORD_CLIENT_SECRET!,
       grant_type: 'authorization_code',
       code,
-      redirect_uri: env.DISCORD_REDIRECT_URI,
+      redirect_uri: env.HSS_DISCORD_REDIRECT_URI || 'http://auth.localhost/callback',
     }),
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   })
@@ -53,8 +53,9 @@ export async function getDiscordUser(accessToken: string) {
 
 export function getAuthUrl(state?: string) {
   const scope = encodeURIComponent('identify email')
-  let url = `https://discord.com/api/oauth2/authorize?client_id=${env.DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(
-    env.DISCORD_REDIRECT_URI
+  const redirectUri = env.HSS_DISCORD_REDIRECT_URI || 'http://auth.localhost/callback';
+  let url = `https://discord.com/api/oauth2/authorize?client_id=${env.HSS_DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(
+    redirectUri
   )}&response_type=code&scope=${scope}`
   
   if (state) {

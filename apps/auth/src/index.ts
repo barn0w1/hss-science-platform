@@ -2,7 +2,6 @@ import { Hono } from 'hono'
 import { serve } from '@hono/node-server'
 import { logger } from 'hono/logger'
 import { PORTS } from '@hss/config'
-import { env } from './config/env.js'
 
 // Routes (Declarative)
 import { authRoutes } from './routes/auth.routes.js'

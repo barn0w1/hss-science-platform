@@ -1,4 +1,17 @@
-import { ALLOWED_REDIRECT_HOSTS } from '../config/allowed-origins.js'
+import { env } from '@hss/config';
+
+const ALLOWED_REDIRECT_HOSTS = [
+  'localhost',
+  '.localhost',
+];
+
+if (env.HSS_COOKIE_DOMAIN) {
+  ALLOWED_REDIRECT_HOSTS.push(env.HSS_COOKIE_DOMAIN);
+  // Also allow the bare domain if it starts with dot
+  if (env.HSS_COOKIE_DOMAIN.startsWith('.')) {
+    ALLOWED_REDIRECT_HOSTS.push(env.HSS_COOKIE_DOMAIN.slice(1));
+  }
+}
 
 /**
  * リダイレクトURLが許可されたドメインかどうかを検証する
@@ -35,6 +48,6 @@ export function validateRedirectUrl(url: string | undefined | null): string | nu
  * デフォルトのリダイレクトURLを取得 (環境変数または安全なデフォルト)
  */
 export function getDefaultRedirectUrl(): string {
-  // デフォルトはlocalhost (ポータル的な役割)
-  return 'http://localhost:8000';
+  // 環境変数から取得するか、localhostを返す
+  return process.env.DRIVE_URL || 'http://localhost:8000';
 }
