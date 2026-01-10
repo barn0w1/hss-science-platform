@@ -1,63 +1,35 @@
-import { env, PORTS } from '@hss/config';
+import { env } from '@hss/config';
 
-const ALLOWED_REDIRECT_HOSTS = [
-  'localhost',
-  '.localhost',
-];
-
-if (env.HSS_COOKIE_DOMAIN) {
-  ALLOWED_REDIRECT_HOSTS.push(env.HSS_COOKIE_DOMAIN);
-  // Also allow the bare domain if it starts with dot
-  if (env.HSS_COOKIE_DOMAIN.startsWith('.')) {
-    ALLOWED_REDIRECT_HOSTS.push(env.HSS_COOKIE_DOMAIN.slice(1));
-  }
-}
-
-/**
- * リダイレクトURLが許可されたドメインかどうかを検証する
- * @param url 検証するURL文字列
- * @returns 検証済みのURL、またはnull
- */
-export function validateRedirectUrl(url: string | undefined | null): string | null {
-  if (!url) return null
-
-  try {
-    const validUrl = new URL(url)
-    const hostname = validUrl.hostname
-
-    // ホスト名の検証
-    const isAllowed = ALLOWED_REDIRECT_HOSTS.some((allowed: string) => {
-      if (allowed.startsWith('.')) {
-        return hostname.endsWith(allowed) || hostname === allowed.slice(1)
-      }
-      return hostname === allowed
-    })
-
-    if (isAllowed) {
-      return url
+export function getGenericDefaultRedirect(): string {
+    const protocol = env.NODE_ENV === 'production' ? 'https' : 'http';
+    if (env.HSS_DOMAIN === 'localhost') {
+        return `${protocol}://${env.HSS_DOMAIN}`;
     }
-  } catch (e) {
-    // URLパースエラーの場合は無効とみなす
-    return null
-  }
-
-  return null
+    return `${protocol}://${env.HSS_DOMAIN}`;
 }
 
-/**
- * デフォルトのリダイレクトURLを取得 (環境変数または安全なデフォルト)
- */
-export function getDefaultRedirectUrl(): string {
-  // 環境変数から取得するか、システムのルートへ
-  if (process.env.DRIVE_URL) return process.env.DRIVE_URL;
-
-  const protocol = env.NODE_ENV === 'production' ? 'https' : 'http';
-  
-  // localhostの場合はポートを含める (Webのポートへ)
-  if (env.HSS_DOMAIN === 'localhost') {
-    return `${protocol}://${env.HSS_DOMAIN}`;
-  }
-
-  // 本番環境などはドメイン直下 (例: https://hss-science.org)
-  return `${protocol}://${env.HSS_DOMAIN}`;
+export function validateRedirectUrl(url: string | undefined): string | null {
+    if (!url) return null;
+    
+    try {
+        const u = new URL(url);
+        // Security: Only allow redirects to subdomains of HSS_COOKIE_DOMAIN
+        // e.g. .company.com -> app.company.com (OK), evil.com (NO)
+        
+        // Remove leading dot if present
+        const rootDomain = env.HSS_COOKIE_DOMAIN ? env.HSS_COOKIE_DOMAIN.replace(/^\./, '') : 'localhost';
+        
+        if (rootDomain === 'localhost') {
+             if (u.hostname === 'localhost' || u.hostname.endsWith('.localhost')) {
+                 return url;
+             }
+        } else {
+             if (u.hostname.endsWith(rootDomain)) {
+                 return url;
+             }
+        }
+        return null;
+    } catch {
+        return null;
+    }
 }
