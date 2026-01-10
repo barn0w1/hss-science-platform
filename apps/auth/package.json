@@ -14,7 +14,7 @@
     "@hss/auth-middleware": "workspace:*",
     "@hss/config": "workspace:*",
     "@hss/database": "workspace:*",
-    "@hss/session-sdk": "workspace:*",
+    "@hss/session": "workspace:*",
     "dotenv": "^17.2.3",
     "hono": "^4.11.3"
   },

@@ -15,7 +15,7 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "@hss/session-sdk": "workspace:*",
+    "@hss/session": "workspace:*",
     "hono": "^4.11.3"
   },
   "devDependencies": {

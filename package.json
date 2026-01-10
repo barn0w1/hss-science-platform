@@ -2,7 +2,6 @@
   "name": "hss-science-platform",
   "version": "1.0.0",
   "description": "The unified cloud infrastructure for HSS Science.",
-  "private": true,
   "license": "GNU Affero General Public License v3.0",
   "packageManager": "pnpm@10.28.0",
   "scripts": {

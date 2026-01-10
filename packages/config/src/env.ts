@@ -1,46 +1,35 @@
-import { config } from 'dotenv';
-import path from 'node:path';
+import { z } from "zod";
 
-// Load .env from workspace root (relative to this package typically in node_modules or monorepo structure)
-// We assume this is run from an app connected to the monorepo root
-// But safely, we can try to find the root .env
-config({ path: path.resolve(process.cwd(), '../../.env') });
+const envSchema = z.object({
+    NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
-/**
- * Type-safe Environment Variables Accessor
- */
-export const env = {
-    NODE_ENV: process.env.NODE_ENV || 'development',
-    
     // Database
-    HSS_DATABASE_URL: process.env.HSS_DATABASE_URL,
+    HSS_DATABASE_URL: z.string().url(),
 
     // General
-    HSS_DOMAIN: process.env.HSS_DOMAIN || 'localhost',
-    
+    HSS_DOMAIN: z.string().default('localhost'),
+
     // Redis
-    HSS_REDIS_HOST: process.env.HSS_REDIS_HOST || 'localhost',
-    HSS_REDIS_PORT: Number(process.env.HSS_REDIS_PORT) || 6379,
-    HSS_REDIS_PASSWORD: process.env.HSS_REDIS_PASSWORD,
-    
+    HSS_REDIS_HOST: z.string().min(1),
+    HSS_REDIS_PORT: z.coerce.number().default(6379),
+    HSS_REDIS_PASSWORD: z.string().optional(),
+
     // Auth / Cookie
-    HSS_COOKIE_DOMAIN: process.env.HSS_COOKIE_DOMAIN, // e.g. .hss-science.org
+    // 本番でドット(.)忘れを防ぐため、ここで強制チェックしてもいい
+    HSS_COOKIE_DOMAIN: z.string(), 
 
     // Discord
-    HSS_DISCORD_CLIENT_ID: process.env.HSS_DISCORD_CLIENT_ID,
-    HSS_DISCORD_CLIENT_SECRET: process.env.HSS_DISCORD_CLIENT_SECRET,
-    HSS_DISCORD_REDIRECT_URI: process.env.HSS_DISCORD_REDIRECT_URI,
-    
-    // Computed helper
-    isProduction: process.env.NODE_ENV === 'production',
-} as const;
+    HSS_DISCORD_CLIENT_ID: z.string(),
+    HSS_DISCORD_CLIENT_SECRET: z.string(),
+    HSS_DISCORD_REDIRECT_URI: z.string().url(),
+});
 
-export function checkRequiredEnv() {
-    const missing: string[] = [];
-    if (!env.HSS_DATABASE_URL) missing.push('HSS_DATABASE_URL');
-    if (!env.HSS_DISCORD_CLIENT_ID) missing.push('HSS_DISCORD_CLIENT_ID');
-    
-    if (missing.length > 0) {
-        throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
-    }
+const _env = envSchema.safeParse(process.env);
+
+if (!_env.success) {
+    console.error("❌ Invalid environment variables:", _env.error.format());
+    throw new Error("Invalid environment variables");
 }
+
+export const env = _env.data;
+export const isProduction = env.NODE_ENV === 'production';

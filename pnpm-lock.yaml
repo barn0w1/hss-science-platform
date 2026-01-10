@@ -26,9 +26,9 @@ importers:
       '@hss/database':
         specifier: workspace:*
         version: link:../../packages/database
-      '@hss/session-sdk':
+      '@hss/session':
         specifier: workspace:*
-        version: link:../../packages/session-sdk
+        version: link:../../packages/session
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
@@ -51,9 +51,9 @@ importers:
 
   packages/auth-middleware:
     dependencies:
-      '@hss/session-sdk':
+      '@hss/session':
         specifier: workspace:*
-        version: link:../session-sdk
+        version: link:../session
       hono:
         specifier: ^4.11.3
         version: 4.11.3
@@ -67,15 +67,15 @@ importers:
 
   packages/config:
     dependencies:
-      dotenv:
-        specifier: ^16.4.1
-        version: 16.6.1
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
     devDependencies:
       '@types/node':
-        specifier: ^20.11.0
-        version: 20.19.27
+        specifier: ^25.0.5
+        version: 25.0.5
       typescript:
-        specifier: ^5.3.0
+        specifier: ^5.9.3
         version: 5.9.3
 
   packages/database:
@@ -109,7 +109,7 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/session-sdk:
+  packages/session:
     dependencies:
       '@hss/config':
         specifier: workspace:*
@@ -117,10 +117,16 @@ importers:
       ioredis:
         specifier: ^5.9.1
         version: 5.9.1
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
     devDependencies:
+      '@tsconfig/node24':
+        specifier: ^24.0.3
+        version: 24.0.3
       '@types/node':
-        specifier: ^20.19.27
-        version: 20.19.27
+        specifier: ^24.0.3
+        version: 24.10.6
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -591,8 +597,11 @@ packages:
   '@ioredis/commands@1.5.0':
     resolution: {integrity: sha512-eUgLqrMf8nJkZxT24JvVRrQya1vZkQh8BBeYNwGDqa5I0VUi8ACx7uFvAaLxintokpTenkK6DASvo/bvNbBGow==}
 
-  '@types/node@20.19.27':
-    resolution: {integrity: sha512-N2clP5pJhB2YnZJ3PIHFk5RkygRX5WO/5f0WC08tp0wd+sv0rsJk3MqWn3CbNmT2J505a5336jaQj4ph1AdMug==}
+  '@tsconfig/node24@24.0.3':
+    resolution: {integrity: sha512-vcERKtKQKHgzt/vfS3Gjasd8SUI2a0WZXpgJURdJsMySpS5+ctgbPfuLj2z/W+w4lAfTWxoN4upKfu2WzIRYnw==}
+
+  '@types/node@24.10.6':
+    resolution: {integrity: sha512-B8h60xgJMR/xmgyX9fncRzEW9gCxoJjdenUhke2v1JGOd/V66KopmWrLPXi5oUI4VuiGK+d+HlXJjDRZMj21EQ==}
 
   '@types/node@25.0.3':
     resolution: {integrity: sha512-W609buLVRVmeW693xKfzHeIV6nJGGz98uCPfeXI1ELMLXVeKYZ9m15fAMSaUPBHYLGFsVRcMmSCksQOrZV9BYA==}
@@ -868,9 +877,6 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  undici-types@6.21.0:
-    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
-
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
@@ -878,6 +884,9 @@ packages:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
     engines: {node: '>= 8'}
     hasBin: true
+
+  zod@4.3.5:
+    resolution: {integrity: sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g==}
 
 snapshots:
 
@@ -1121,9 +1130,11 @@ snapshots:
 
   '@ioredis/commands@1.5.0': {}
 
-  '@types/node@20.19.27':
+  '@tsconfig/node24@24.0.3': {}
+
+  '@types/node@24.10.6':
     dependencies:
-      undici-types: 6.21.0
+      undici-types: 7.16.0
 
   '@types/node@25.0.3':
     dependencies:
@@ -1363,10 +1374,10 @@ snapshots:
 
   typescript@5.9.3: {}
 
-  undici-types@6.21.0: {}
-
   undici-types@7.16.0: {}
 
   which@2.0.2:
     dependencies:
       isexe: 2.0.0
+
+  zod@4.3.5: {}

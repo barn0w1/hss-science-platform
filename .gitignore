@@ -12,23 +12,16 @@ dist
 build
 .turbo
 
-# OS generated
-.DS_Store
-Thumbs.db
-
 # Logs
 npm-debug.log*
-yarn-debug.log*
 pnpm-debug.log*
 
 # Certs
 *.pem
 *.key
 
-# logs
+# local
 /infra/local/logs/
-    
-# data
 /infra/local/data/
 
 docs/

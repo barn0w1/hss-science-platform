@@ -1,6 +1,6 @@
 import { createMiddleware } from 'hono/factory';
 import { getCookie } from 'hono/cookie';
-import { SessionManager, COOKIE_NAME, SessionUser } from '@hss/session-sdk';
+import { SessionManager, COOKIE_NAME, SessionUser } from '@hss/session';
 
 type AuthVariables = {
   user: SessionUser | null;
