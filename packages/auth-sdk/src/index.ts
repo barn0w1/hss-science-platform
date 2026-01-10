@@ -40,35 +40,48 @@ export const AuthService = {
     const sessionId = crypto.randomUUID();
     const sessionKey = `session:${sessionId}`;
     const userSessionsKey = `user_sessions:${user.id}`;
+    const sessionData = JSON.stringify(user);
 
-    // transaction for atomicity preferable, but simple commands ok here
-    await redis.set(
-      sessionKey,
-      JSON.stringify(user),
-      "EX",
-      SESSION_TTL
-    );
+    // Atomically: 
+    // 1. Set session data
+    // 2. Add to user's list
+    // 3. Trim list to max size
+    // 4. Return removed session IDs (to delete their keys)
+    const script = `
+      redis.call('SET', KEYS[1], ARGV[1], 'EX', ARGV[2])
+      redis.call('RPUSH', KEYS[2], ARGV[3])
+      redis.call('EXPIRE', KEYS[2], ARGV[2])
+      
+      local count = redis.call('LLEN', KEYS[2])
+      if count > tonumber(ARGV[4]) then
+        local removed = redis.call('LRANGE', KEYS[2], 0, count - tonumber(ARGV[4]) - 1)
+        redis.call('LTRIM', KEYS[2], -tonumber(ARGV[4]), -1)
+        return removed
+      end
+      return {}
+    `;
 
-    // Track user sessions
-    await redis.rpush(userSessionsKey, sessionId);
-    await redis.expire(userSessionsKey, SESSION_TTL);
+    try {
+      const removedSessionIds = await redis.eval(
+        script,
+        2, // number of keys
+        sessionKey,
+        userSessionsKey,
+        // args
+        sessionData,
+        SESSION_TTL,
+        sessionId,
+        5 // Max sessions
+      ) as string[];
 
-    // Enforce Max Sessions (e.g. 5)
-    // Trim list to last 5 elements, but we need to know what we removed to delete the keys
-    
-    // Check count
-    const count = await redis.llen(userSessionsKey);
-    if (count > 5) {
-      // Remove oldest
-      const oldestSessionIds = await redis.lrange(userSessionsKey, 0, count - 6);
-      if (oldestSessionIds.length > 0) {
-        // Trim the list
-        await redis.ltrim(userSessionsKey, -5, -1);
-        
-        // Delete the actual session keys
-        const keysToDelete = oldestSessionIds.map(id => `session:${id}`);
+      // Clean up removed sessions asynchronously
+      if (removedSessionIds.length > 0) {
+        const keysToDelete = removedSessionIds.map(id => `session:${id}`);
         await redis.del(...keysToDelete);
       }
+    } catch (err) {
+      console.error('Redis Transaction Error:', err);
+      throw new Error('Failed to create session');
     }
 
     return sessionId;
