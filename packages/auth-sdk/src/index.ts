@@ -23,6 +23,11 @@ export const COOKIE_OPTS = {
     maxAge: SESSION_TTL,
 } as const;
 
+export const REDIS_KEYS = {
+    SESSION: (sessionId: string) => `hss:session:${sessionId}`,
+    USER_SESSIONS: (userId: string) => `hss:user:${userId}:sessions`,
+} as const;
+
 export interface ConnectionInfo {
     ip: string;
     deviceType: 'desktop' | 'mobile' | 'tablet' | 'unknown';
@@ -59,8 +64,8 @@ export const AuthService = {
    */
   async createSession(user: SessionUser): Promise<string> {
     const sessionId = generateSessionId();
-    const sessionKey = `session:${sessionId}`;
-    const userSessionsKey = `user_sessions:${user.id}`;
+    const sessionKey = REDIS_KEYS.SESSION(sessionId);
+    const userSessionsKey = REDIS_KEYS.USER_SESSIONS(user.id);
     const sessionData = JSON.stringify(user);
 
     // Atomically: 
@@ -97,7 +102,7 @@ export const AuthService = {
 
       // Clean up removed sessions asynchronously
       if (removedSessionIds.length > 0) {
-        const keysToDelete = removedSessionIds.map(id => `session:${id}`);
+        const keysToDelete = removedSessionIds.map(id => REDIS_KEYS.SESSION(id));
         await redis.del(...keysToDelete);
       }
     } catch (err) {
@@ -113,7 +118,7 @@ export const AuthService = {
    * Automatically extends session TTL (Sliding Expiration)
    */
   async validateSession<T extends SessionUser = SessionUser>(sessionId: string): Promise<T | null> {
-    const key = `session:${sessionId}`;
+    const key = REDIS_KEYS.SESSION(sessionId);
     const data = await redis.get(key);
 
     if (!data) {
@@ -122,7 +127,7 @@ export const AuthService = {
 
     try {
       const user = JSON.parse(data) as T;
-      const userSessionsKey = `user_sessions:${user.id}`;
+      const userSessionsKey = REDIS_KEYS.USER_SESSIONS(user.id);
       
       // Update lastActiveAt if connection info exists (Smart update)
       if (user.connection) {
@@ -155,13 +160,13 @@ export const AuthService = {
    * Performs lazy cleanup of expired sessions found in the list.
    */
   async getUserSessions<T extends SessionUser = SessionUser>(userId: string): Promise<{ sessionId: string; data: T }[]> {
-     const userSessionsKey = `user_sessions:${userId}`;
+     const userSessionsKey = REDIS_KEYS.USER_SESSIONS(userId);
      // Get all candidates
      const sessionIds = await redis.lrange(userSessionsKey, 0, -1);
      
      if (sessionIds.length === 0) return [];
 
-     const keys = sessionIds.map(id => `session:${id}`);
+     const keys = sessionIds.map(id => REDIS_KEYS.SESSION(id));
      // MGET for O(1) bulk retrieval
      const sessionsData = await redis.mget(...keys);
 
@@ -197,11 +202,11 @@ export const AuthService = {
    * Revoke all sessions for a user (e.g. Password Reset)
    */
   async revokeAllUserSessions(userId: string): Promise<void> {
-    const userSessionsKey = `user_sessions:${userId}`;
+    const userSessionsKey = REDIS_KEYS.USER_SESSIONS(userId);
     const sessionIds = await redis.lrange(userSessionsKey, 0, -1);
 
     if (sessionIds.length > 0) {
-        const keys = sessionIds.map(id => `session:${id}`);
+        const keys = sessionIds.map(id => REDIS_KEYS.SESSION(id));
         // Delete all session keys and the list key itself in one go
         const pipeline = redis.pipeline();
         pipeline.del(...keys);
@@ -234,7 +239,7 @@ export const AuthService = {
    * Update Session User Data
    */
   async updateSessionUser<T extends SessionUser = SessionUser>(sessionId: string, partialUser: Partial<T>) {
-    const key = `session:${sessionId}`;
+    const key = REDIS_KEYS.SESSION(sessionId);
     const currentStr = await redis.get(key);
     if (!currentStr) return false;
 
@@ -258,13 +263,13 @@ export const AuthService = {
    * Revoke Session manually
    */
   async revokeSession(sessionId: string): Promise<void> {
-    const key = `session:${sessionId}`;
+    const key = REDIS_KEYS.SESSION(sessionId);
     const sessionStr = await redis.get(key);
     
     if (sessionStr) {
         try {
             const session = JSON.parse(sessionStr) as SessionUser;
-            const userSessionsKey = `user_sessions:${session.id}`;
+            const userSessionsKey = REDIS_KEYS.USER_SESSIONS(session.id);
             await redis.lrem(userSessionsKey, 0, sessionId);
         } catch {}
     }
@@ -276,7 +281,7 @@ export const AuthService = {
    * Invalidate Session
    */
   async invalidateSession(sessionId: string): Promise<void> {
-    const key = `session:${sessionId}`;
+    const key = REDIS_KEYS.SESSION(sessionId);
     await redis.del(key);
   }
 };
