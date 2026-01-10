@@ -6,12 +6,15 @@
   "license": "GNU Affero General Public License v3.0",
   "packageManager": "pnpm@10.28.0",
   "scripts": {
-    "build": "turbo build",
     "dev": "turbo dev",
-    "lint": "turbo lint",
-    "clean": "turbo clean",
+    "build": "turbo build",
+    "type-check": "turbo type-check",
+    
     "db:generate": "turbo db:generate",
-    "db:migrate": "turbo db:migrate"
+    "db:migrate": "turbo db:migrate",
+
+    "dev:start": "docker compose -f infra/local/compose.yaml up -d",
+    "dev:stop": "docker compose -f infra/local/compose.yaml down"
   },
   "devDependencies": {
     "turbo": "^2.7.3"
