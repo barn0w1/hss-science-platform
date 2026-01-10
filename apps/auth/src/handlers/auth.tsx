@@ -5,6 +5,7 @@ import { AuthService, COOKIE_NAME, COOKIE_OPTS } from '@hss/auth-sdk'
 import { LoginPage } from '../views/pages/login.js'
 import { exchangeCodeForToken, getAuthUrl, getDiscordUser, DiscordUser } from '../services/discord.js'
 import { validateRedirectUrl, getDefaultRedirectUrl } from '../utils/url.js'
+import { parseUserAgent } from '../utils/ua.js'
 
 const app = new Hono()
 
@@ -80,6 +81,10 @@ app.get('/callback', async (c) => {
       }
     }).returning()
 
+    const uaString = c.req.header('user-agent');
+    const ua = parseUserAgent(uaString);
+    const ip = c.req.header('x-forwarded-for') || 'unknown';
+
     // D. Session作成 (Redis)
     const sessionId = await AuthService.createSession({
       id: user.id,
@@ -87,6 +92,13 @@ app.get('/callback', async (c) => {
       username: user.username,
       role: user.role,
       avatarUrl: user.avatarUrl,
+      connection: {
+        ip: ip,
+        deviceType: ua.deviceType,
+        os: ua.os,
+        browser: ua.browser,
+        lastActiveAt: new Date().toISOString(),
+      }
     })
 
     // E. Cookieセット (セッションID)
