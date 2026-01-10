@@ -15,12 +15,21 @@ export const COOKIE_NAME = "hss_science_session";
 // 7 days in seconds
 export const SESSION_TTL = 60 * 60 * 24 * 7; 
 
+const IS_PROD = process.env.NODE_ENV === 'production';
+// 環境変数 COOKIE_DOMAIN があればそれを使用 (例: .hss-science.org)
+// なければ、Production時はセキュリティのためエラーにすべきだが、
+// ここではデフォルトでundefined (host-only) とする
+const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
+
 export const COOKIE_OPTS = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    // Productionなら必ずSecure
+    secure: IS_PROD,
+    // サブドメイン間で共有する場合は Lax が適切
     sameSite: 'Lax',
     path: '/',
     maxAge: SESSION_TTL,
+    domain: COOKIE_DOMAIN,
 } as const;
 
 export const REDIS_KEYS = {
