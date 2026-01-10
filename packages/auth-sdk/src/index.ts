@@ -3,7 +3,7 @@ import { Redis } from "ioredis";
 // env
 const REDIS_HOST = process.env.REDIS_HOST || "localhost";
 const REDIS_PORT = Number(process.env.REDIS_PORT) || 6379;
-const REDIS_PASSWORD = process.env.REDIS_PASSWORD || "redis_local_password";
+const REDIS_PASSWORD = process.env.REDIS_PASSWORD || "password";
 
 export const redis = new Redis({
   host: REDIS_HOST,
@@ -23,12 +23,33 @@ export const COOKIE_OPTS = {
     maxAge: SESSION_TTL,
 } as const;
 
+export interface ConnectionInfo {
+    ip: string;
+    deviceType: 'desktop' | 'mobile' | 'tablet' | 'unknown';
+    os: string;
+    browser: string;
+    lastActiveAt: string;
+}
+
 export interface SessionUser {
   id: string;
   discordId: string;
   username: string;
   role: string | null;
   avatarUrl: string | null;
+  // Optional connection metadata for smart session management
+  connection?: ConnectionInfo;
+  // Allow additional properties (ProjectID, Permissions, etc.)
+  [key: string]: unknown;
+}
+
+
+function generateSessionId(): string {
+  // 32 bytes of random data, encoded as base64url (approx 43 chars)
+  // More compact and entropy-dense than UUID v4
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Buffer.from(array).toString('base64url');
 }
 
 export const AuthService = {
@@ -37,7 +58,7 @@ export const AuthService = {
    * Limits concurrent sessions per user to 5.
    */
   async createSession(user: SessionUser): Promise<string> {
-    const sessionId = crypto.randomUUID();
+    const sessionId = generateSessionId();
     const sessionKey = `session:${sessionId}`;
     const userSessionsKey = `user_sessions:${user.id}`;
     const sessionData = JSON.stringify(user);
@@ -89,8 +110,9 @@ export const AuthService = {
 
   /**
    * Session Validation
+   * Automatically extends session TTL (Sliding Expiration)
    */
-  async validateSession(sessionId: string): Promise<SessionUser | null> {
+  async validateSession<T extends SessionUser = SessionUser>(sessionId: string): Promise<T | null> {
     const key = `session:${sessionId}`;
     const data = await redis.get(key);
 
@@ -99,26 +121,131 @@ export const AuthService = {
     }
 
     try {
-      await redis.expire(key, SESSION_TTL);
+      const user = JSON.parse(data) as T;
+      const userSessionsKey = `user_sessions:${user.id}`;
+      
+      // Update lastActiveAt if connection info exists (Smart update)
+      if (user.connection) {
+        user.connection.lastActiveAt = new Date().toISOString();
+        // We need to write back the updated data
+        await redis.pipeline()
+           .set(key, JSON.stringify(user), "EX", SESSION_TTL)
+           .expire(userSessionsKey, SESSION_TTL)
+           .exec();
+           
+        return user;
+      }
 
-      return JSON.parse(data) as SessionUser;
+      // Standard sliding expiration
+      await redis.pipeline()
+        .expire(key, SESSION_TTL)
+        .expire(userSessionsKey, SESSION_TTL)
+        .exec();
+
+      return user;
     } catch (e) {
       console.error("Failed to parse session data", e);
       return null;
     }
   },
 
+
+  /**
+   * Get all active sessions for a user
+   * Performs lazy cleanup of expired sessions found in the list.
+   */
+  async getUserSessions<T extends SessionUser = SessionUser>(userId: string): Promise<{ sessionId: string; data: T }[]> {
+     const userSessionsKey = `user_sessions:${userId}`;
+     // Get all candidates
+     const sessionIds = await redis.lrange(userSessionsKey, 0, -1);
+     
+     if (sessionIds.length === 0) return [];
+
+     const keys = sessionIds.map(id => `session:${id}`);
+     // MGET for O(1) bulk retrieval
+     const sessionsData = await redis.mget(...keys);
+
+     const activeSessions: { sessionId: string; data: T }[] = [];
+     const expiredSessionIds: string[] = [];
+
+     sessionsData.forEach((data, index) => {
+        const sid = sessionIds[index];
+        if (data) {
+            try {
+                activeSessions.push({ sessionId: sid, data: JSON.parse(data) });
+            } catch {
+                expiredSessionIds.push(sid);
+            }
+        } else {
+            // Found a ghost ID in the list (session expired key but id remains in list)
+            expiredSessionIds.push(sid);
+        }
+     });
+
+     // Smart Cleanup: Remove expired IDs from the list asynchronously
+     if (expiredSessionIds.length > 0) {
+        // pipeline to remove each expired ID
+        const pipeline = redis.pipeline();
+        expiredSessionIds.forEach(id => pipeline.lrem(userSessionsKey, 0, id));
+        pipeline.exec().catch(err => console.error('Failed to cleanup user sessions', err));
+     }
+
+     return activeSessions;
+  },
+
+  /**
+   * Revoke all sessions for a user (e.g. Password Reset)
+   */
+  async revokeAllUserSessions(userId: string): Promise<void> {
+    const userSessionsKey = `user_sessions:${userId}`;
+    const sessionIds = await redis.lrange(userSessionsKey, 0, -1);
+
+    if (sessionIds.length > 0) {
+        const keys = sessionIds.map(id => `session:${id}`);
+        // Delete all session keys and the list key itself in one go
+        const pipeline = redis.pipeline();
+        pipeline.del(...keys);
+        pipeline.del(userSessionsKey);
+        await pipeline.exec();
+    } else {
+        await redis.del(userSessionsKey);
+    }
+  },
+
+  /**
+   * Regenerate Session ID (Session Rotation)
+   * Recommended after privilege changes or periodic rotation.
+   * Creates a new session ID with the same data, and invalidates the old one.
+   */
+  async regenerateSession(oldSessionId: string): Promise<string | null> {
+    const user = await this.validateSession(oldSessionId);
+    if (!user) return null;
+
+    // Create new session first
+    const newSessionId = await this.createSession(user);
+
+    // Then immediate revoke the old one
+    await this.revokeSession(oldSessionId);
+
+    return newSessionId;
+  },
+
   /**
    * Update Session User Data
    */
-  async updateSessionUser(sessionId: string, partialUser: Partial<SessionUser>) {
+  async updateSessionUser<T extends SessionUser = SessionUser>(sessionId: string, partialUser: Partial<T>) {
     const key = `session:${sessionId}`;
     const currentStr = await redis.get(key);
     if (!currentStr) return false;
 
     try {
-      const current = JSON.parse(currentStr) as SessionUser;
+      const current = JSON.parse(currentStr) as T;
       const updated = { ...current, ...partialUser };
+
+      // Update date if connection info is present
+      if (updated.connection) {
+         updated.connection.lastActiveAt = new Date().toISOString();
+      }
 
       await redis.set(key, JSON.stringify(updated), "EX", SESSION_TTL);
       return true;
