@@ -5,17 +5,16 @@ import path from 'node:path';
 config({ path: path.resolve(process.cwd(), '../../.env') });
 
 const requiredEnv = [
-  'DISCORD_CLIENT_ID',
-  'DISCORD_CLIENT_SECRET',
-  'DISCORD_REDIRECT_URI',
+  'HSS_DISCORD_CLIENT_ID',
+  'HSS_DISCORD_CLIENT_SECRET',
+  'HSS_DISCORD_REDIRECT_URI',
 ] as const;
 
 export const env = {
-  DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID!,
-  DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET!,
-  DISCORD_REDIRECT_URI: process.env.DISCORD_REDIRECT_URI || 'http://auth.localhost/callback',
-  DRIVE_URL: process.env.DRIVE_URL || 'http://drive.localhost',
-  PORT: Number(process.env.AUTH_PORT || process.env.PORT) || 3000,
+  DISCORD_CLIENT_ID: process.env.HSS_DISCORD_CLIENT_ID!,
+  DISCORD_CLIENT_SECRET: process.env.HSS_DISCORD_CLIENT_SECRET!,
+  DISCORD_REDIRECT_URI: process.env.HSS_DISCORD_REDIRECT_URI || 'http://auth.localhost/callback',
+  PORT: Number(process.env.PORT_AUTH || process.env.PORT) || 3000,
 };
 
 for (const key of requiredEnv) {

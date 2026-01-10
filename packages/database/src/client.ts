@@ -1,9 +1,9 @@
 import postgres from "postgres";
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.HSS_DATABASE_URL;
 
 if (!connectionString) {
-  throw new Error("DATABASE_URL is missing in environment variables.");
+  throw new Error("HSS_DATABASE_URL is missing in environment variables.");
 }
 
 // Create a connection pool
