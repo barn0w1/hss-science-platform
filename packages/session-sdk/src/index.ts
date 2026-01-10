@@ -57,7 +57,7 @@ function generateSessionId(): string {
   return Buffer.from(array).toString('base64url');
 }
 
-export const AuthService = {
+export const SessionManager = {
   /**
    * Create Session
    * Limits concurrent sessions per user to 5.

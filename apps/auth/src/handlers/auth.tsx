@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { setCookie, getCookie, deleteCookie } from 'hono/cookie'
 import { db, users } from '@hss/database'
-import { AuthService, COOKIE_NAME, COOKIE_OPTS } from '@hss/auth-sdk'
+import { SessionManager, COOKIE_NAME, COOKIE_OPTS } from '@hss/session-sdk'
 import { LoginPage } from '../views/pages/login.js'
 import { exchangeCodeForToken, getAuthUrl, getDiscordUser, DiscordUser } from '../services/discord.js'
 import { validateRedirectUrl, getDefaultRedirectUrl } from '../utils/url.js'
@@ -86,7 +86,7 @@ app.get('/callback', async (c) => {
     const ip = c.req.header('x-forwarded-for') || 'unknown';
 
     // D. Session作成 (Redis)
-    const sessionId = await AuthService.createSession({
+    const sessionId = await SessionManager.createSession({
       id: user.id,
       discordId: user.discordId,
       username: user.username,

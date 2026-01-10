@@ -1,5 +1,5 @@
 {
-  "name": "@hss/auth-sdk",
+  "name": "@hss/session-sdk",
   "version": "1.0.0",
   "private": true,
   "type": "module",
