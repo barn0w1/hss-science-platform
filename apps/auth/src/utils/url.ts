@@ -1,4 +1,4 @@
-import { env } from '@hss/config';
+import { env, PORTS } from '@hss/config';
 
 const ALLOWED_REDIRECT_HOSTS = [
   'localhost',
@@ -48,6 +48,16 @@ export function validateRedirectUrl(url: string | undefined | null): string | nu
  * デフォルトのリダイレクトURLを取得 (環境変数または安全なデフォルト)
  */
 export function getDefaultRedirectUrl(): string {
-  // 環境変数から取得するか、localhostを返す
-  return process.env.DRIVE_URL || 'http://localhost:8000';
+  // 環境変数から取得するか、システムのルートへ
+  if (process.env.DRIVE_URL) return process.env.DRIVE_URL;
+
+  const protocol = env.NODE_ENV === 'production' ? 'https' : 'http';
+  
+  // localhostの場合はポートを含める (Webのポートへ)
+  if (env.HSS_DOMAIN === 'localhost') {
+    return `${protocol}://${env.HSS_DOMAIN}`;
+  }
+
+  // 本番環境などはドメイン直下 (例: https://hss-science.org)
+  return `${protocol}://${env.HSS_DOMAIN}`;
 }

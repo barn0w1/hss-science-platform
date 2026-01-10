@@ -6,4 +6,5 @@ export const PORTS = {
     AUTH: 3000,
     STORAGE_API: 3010,
     STORAGE_WEB: 8010,
+    WEB: 8000,
 } as const;

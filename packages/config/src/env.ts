@@ -14,6 +14,9 @@ export const env = {
     
     // Database
     HSS_DATABASE_URL: process.env.HSS_DATABASE_URL,
+
+    // General
+    HSS_DOMAIN: process.env.HSS_DOMAIN || 'localhost',
     
     // Redis
     HSS_REDIS_HOST: process.env.HSS_REDIS_HOST || 'localhost',
