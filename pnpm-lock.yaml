@@ -62,6 +62,19 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  packages/config:
+    dependencies:
+      dotenv:
+        specifier: ^16.4.1
+        version: 16.6.1
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.27
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+
   packages/database:
     dependencies:
       dotenv:
