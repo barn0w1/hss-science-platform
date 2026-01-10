@@ -34,17 +34,42 @@ export interface SessionUser {
 export const AuthService = {
   /**
    * Create Session
+   * Limits concurrent sessions per user to 5.
    */
   async createSession(user: SessionUser): Promise<string> {
     const sessionId = crypto.randomUUID();
-    const key = `session:${sessionId}`;
+    const sessionKey = `session:${sessionId}`;
+    const userSessionsKey = `user_sessions:${user.id}`;
 
+    // transaction for atomicity preferable, but simple commands ok here
     await redis.set(
-      key,
+      sessionKey,
       JSON.stringify(user),
       "EX",
       SESSION_TTL
     );
+
+    // Track user sessions
+    await redis.rpush(userSessionsKey, sessionId);
+    await redis.expire(userSessionsKey, SESSION_TTL);
+
+    // Enforce Max Sessions (e.g. 5)
+    // Trim list to last 5 elements, but we need to know what we removed to delete the keys
+    
+    // Check count
+    const count = await redis.llen(userSessionsKey);
+    if (count > 5) {
+      // Remove oldest
+      const oldestSessionIds = await redis.lrange(userSessionsKey, 0, count - 6);
+      if (oldestSessionIds.length > 0) {
+        // Trim the list
+        await redis.ltrim(userSessionsKey, -5, -1);
+        
+        // Delete the actual session keys
+        const keysToDelete = oldestSessionIds.map(id => `session:${id}`);
+        await redis.del(...keysToDelete);
+      }
+    }
 
     return sessionId;
   },
@@ -87,6 +112,24 @@ export const AuthService = {
     } catch {
       return false;
     }
+  },
+
+  /**
+   * Revoke Session manually
+   */
+  async revokeSession(sessionId: string): Promise<void> {
+    const key = `session:${sessionId}`;
+    const sessionStr = await redis.get(key);
+    
+    if (sessionStr) {
+        try {
+            const session = JSON.parse(sessionStr) as SessionUser;
+            const userSessionsKey = `user_sessions:${session.id}`;
+            await redis.lrem(userSessionsKey, 0, sessionId);
+        } catch {}
+    }
+
+    await redis.del(key);
   },
 
   /**

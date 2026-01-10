@@ -10,9 +10,10 @@
       "cache": false,
       "persistent": true
     },
-    "lint": {},
-    "check-types": {},
     "db:generate": {
+      "cache": false
+    },
+    "db:migrate": {
       "cache": false
     }
   }

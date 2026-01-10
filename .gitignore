@@ -25,5 +25,8 @@ pnpm-debug.log*
 *.pem
 *.key
 
+# logs
+/infra/local/logs/
+    
 # data
-infra/local/
+/infra/local/data/

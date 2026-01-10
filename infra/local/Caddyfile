@@ -1,0 +1,21 @@
+{
+    auto_https off
+}
+
+http://auth.localhost {
+    reverse_proxy host.docker.internal:3000
+}
+
+http://storage.localhost {  
+    handle /api/* {
+        reverse_proxy host.docker.internal:3010
+    }
+
+    handle {
+        reverse_proxy host.docker.internal:8010
+    }
+}
+
+http://localhost {
+    reverse_proxy host.docker.internal:8000
+}

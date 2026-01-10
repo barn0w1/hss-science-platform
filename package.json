@@ -2,16 +2,16 @@
   "name": "hss-science-platform",
   "version": "1.0.0",
   "description": "The unified cloud infrastructure for HSS Science.",
-  "private": true, 
+  "private": true,
   "license": "GNU Affero General Public License v3.0",
-  "packageManager": "pnpm@10.27.0",
+  "packageManager": "pnpm@10.28.0",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "clean": "turbo clean",
     "db:generate": "turbo db:generate",
-    "test": "turbo test"
+    "db:migrate": "turbo db:migrate"
   },
   "devDependencies": {
     "turbo": "^2.7.3"
